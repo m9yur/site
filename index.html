@@ -3,107 +3,218 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>you found it</title>
+<title>are you sure</title>
 
 <style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        background: black;
-        color: #eaeaea;
-        font-family: Arial, sans-serif;
-        overflow: hidden;
-    }
+html, body {
+    margin: 0;
+    height: 100%;
+    background: black;
+    color: #ddd;
+    font-family: monospace;
+    overflow: hidden;
+}
 
-    .center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-    }
+#stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    .btn {
-        margin-top: 20px;
-        padding: 12px 22px;
-        border: 1px solid #444;
-        background: transparent;
-        color: #aaa;
-        cursor: pointer;
-        transition: 0.3s;
-    }
+.card {
+    text-align: center;
+}
 
-    .btn:hover {
-        color: white;
-        border-color: white;
-    }
+h1 {
+    font-weight: normal;
+    letter-spacing: 3px;
+    animation: flicker 1.6s infinite;
+}
 
-    #glitch {
-        font-size: 28px;
-        letter-spacing: 2px;
-        animation: flicker 2s infinite;
-    }
+@keyframes flicker {
+    0% {opacity: 1;}
+    50% {opacity: 0.2;}
+    100% {opacity: 1;}
+}
 
-    @keyframes flicker {
-        0% {opacity: 1;}
-        50% {opacity: 0.4;}
-        100% {opacity: 1;}
-    }
+.btn {
+    margin: 10px;
+    padding: 12px 24px;
+    border: 1px solid rgba(255,0,0,0.5);
+    background: rgba(255,0,0,0.08);
+    color: #ff6b6b;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: 0.2s;
+    position: relative;
+}
 
-    #jumpscare {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: black;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
+.btn:hover {
+    background: rgba(255,0,0,0.2);
+    color: #fff;
+}
 
-    #jumpscare img {
-        width: 300px;
-        max-width: 80%;
-    }
+#no {
+    position: absolute;
+}
 
-    #after {
-        display: none;
-        margin-top: 20px;
-        font-size: 14px;
-        color: #888;
-    }
+#overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle, transparent 40%, rgba(255,0,0,0.2));
+    opacity: 0;
+}
+
+#screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#face {
+    width: 420px;
+    max-width: 90%;
+    opacity: 0;
+    filter: contrast(1.6) brightness(0.7);
+}
+
+#msg {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #777;
+}
+
+.glitch {
+    animation: shake 0.07s infinite;
+}
+
+@keyframes shake {
+    0% {transform: translate(0,0);}
+    25% {transform: translate(-4px,4px);}
+    50% {transform: translate(4px,-4px);}
+    75% {transform: translate(-4px,-4px);}
+    100% {transform: translate(4px,4px);}
+}
+
+.redflash {
+    background: red !important;
+}
 </style>
 </head>
 
 <body>
 
-<div class="center" id="main">
-    <div id="glitch">you weren’t supposed to find this</div>
-    <button class="btn" onclick="start()">click me</button>
+<div id="stage">
+    <div class="card" id="card">
+        <h1 id="title">don’t click</h1>
+        <button class="btn" id="yes">click</button>
+        <button class="btn" id="no">no</button>
+    </div>
 </div>
 
-<div id="jumpscare">
-    <img src="https://i.imgur.com/8p0XH0Q.png">
-    <audio id="sound" src="https://www.myinstants.com/media/sounds/scream.mp3"></audio>
-    <div id="after">lol relax. you good.</div>
+<div id="overlay"></div>
+
+<div id="screen">
+    <img id="face" src="https://i.imgur.com/Z6X6X6x.png">
+    <audio id="heartbeat" src="https://www.myinstants.com/media/sounds/heartbeat.mp3"></audio>
+    <audio id="scream" src="https://www.myinstants.com/media/sounds/scream.mp3"></audio>
+    <div id="msg"></div>
 </div>
 
 <script>
+let noBtn = document.getElementById("no");
+let yesBtn = document.getElementById("yes");
+let title = document.getElementById("title");
+let overlay = document.getElementById("overlay");
+
+let steps = 0;
+
+noBtn.addEventListener("mouseover", () => {
+    let x = Math.random() * 80;
+    let y = Math.random() * 80;
+    noBtn.style.left = x + "%";
+    noBtn.style.top = y + "%";
+});
+
+yesBtn.addEventListener("click", () => {
+    steps++;
+
+    if (steps === 1) {
+        title.textContent = "are you sure";
+        yesBtn.textContent = "yes";
+        return;
+    }
+
+    if (steps === 2) {
+        title.textContent = "are you really sure";
+        yesBtn.textContent = "yes.";
+        return;
+    }
+
+    if (steps === 3) {
+        title.textContent = "last chance";
+        yesBtn.textContent = "do it";
+        return;
+    }
+
+    start();
+});
+
 function start() {
-    document.getElementById("main").style.display = "none";
+    document.getElementById("card").style.display = "none";
+    document.getElementById("screen").style.display = "flex";
+
+    let hb = document.getElementById("heartbeat");
+    hb.volume = 0.2;
+    hb.play();
+
+    let msgs = [
+        "loading",
+        "still loading",
+        "why are you here",
+        "bro leave",
+        "too late"
+    ];
+
+    let i = 0;
+    let msgEl = document.getElementById("msg");
+
+    let t = setInterval(() => {
+        msgEl.textContent = msgs[i];
+        i++;
+        if (i >= msgs.length) clearInterval(t);
+    }, 700);
 
     setTimeout(() => {
-        document.getElementById("jumpscare").style.display = "flex";
-        document.getElementById("sound").play();
+        overlay.style.opacity = "1";
+    }, 1200);
 
+    setTimeout(() => {
+        document.body.classList.add("redflash");
         setTimeout(() => {
-            document.getElementById("after").style.display = "block";
-        }, 1500);
+            document.body.classList.remove("redflash");
+        }, 80);
+    }, 2500);
 
-    }, 1500);
+    setTimeout(() => {
+        document.getElementById("face").style.opacity = "1";
+        document.body.classList.add("glitch");
+
+        let sc = document.getElementById("scream");
+        sc.volume = 1;
+        sc.play();
+    }, 2800);
+
+    setTimeout(() => {
+        document.body.classList.remove("glitch");
+        msgEl.textContent = "relax. you clicked it.";
+    }, 5200);
 }
 </script>
 
